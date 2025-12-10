@@ -1,0 +1,170 @@
+
+services:
+
+  # Define the network here
+  networks:
+    arr-net:
+      driver: bridge
+
+  # RADARR - MOVIE DOWNLOAD AND MANAGEMENT
+  radarr:
+    image: linuxserver/radarr
+    hostname: radarr
+    container_name: radarr
+    networks:
+      - arr-net
+    depends_on:
+      - prowlarr
+    volumes:
+      - ${DOCKER_BASE_FOLDER}/radarr:/config
+      - ~/media/movies:/movies # PATH TO MOVIE MEDIA FILES
+      - ~/Downloads:/downloads
+      - ${DOCKER_BASE_FOLDER}/shared:/shared
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 7878:7878
+    restart: always
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${MY_TMZ} 
+
+  # SONARR - TV SHOW DOWNLOAD AND MANAGEMENT
+  sonarr:
+    image: linuxserver/sonarr
+    hostname: sonarr
+    container_name: sonarr
+    networks:
+      - arr-net
+    depends_on:
+      - prowlarr    
+    volumes:
+      - ${DOCKER_BASE_FOLDER}/sonarr:/config
+      - ~/media/shows:/shows # PATH TO SHOWS MEDIA FILES
+      - ~/Downloads:/downloads
+      - ${DOCKER_BASE_FOLDER}/shared:/shared
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 8989:8989
+    restart: always
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${MY_TMZ}
+
+  # LIDARR - MUSIC DOWNLOADS
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: lidarr
+    networks:
+      - arr-net
+    depends_on:
+      - prowlarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - ${DOCKER_BASE_FOLDER}/lidarr/config:/config
+      - ~/media/music:/music #optional
+      - ~/Downloads:/downloads #optional
+      - ${DOCKER_BASE_FOLDER}/shared:/shared
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 8686:8686
+    restart: unless-stopped
+
+  # PROWLARR - manage the Indexers for all the ARR's
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    networks:
+      - arr-net
+    depends_on:
+      - pihole
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - ~/prowlarr/data:/config
+    ports:
+      - 9696:9696
+    restart: unless-stopped
+
+  # SABNZB - USENET (NZB) DOWNLOADER
+  sabnzbd:
+    image: linuxserver/sabnzbd
+    hostname: sabnzbd
+    container_name: sabnzbd
+    networks:
+      - arr-net
+    volumes:
+      - ${DOCKER_BASE_FOLDER}/sabnzbd:/config
+      - ~/Downloads/complete:/downloads/complete
+      - ~/Downloads/incomplete:/downloads/incomplete
+      - ${DOCKER_BASE_FOLDER}/shared:/shared
+    ports:
+        - 8080:8080
+    restart: always
+    depends_on:
+      - radarr
+      - sonarr
+      - lidarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${MY_TMZ}
+
+  # EMBY
+  emby:
+    image: linuxserver/emby
+    container_name: emby
+    networks:
+      - arr-net
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${MY_TMZ}
+    volumes:
+      - ${DOCKER_BASE_FOLDER}/emby:/config
+      - /media/steve/SteveBStor1/entertainment/home_movies:/data/home
+      - ~/media/shows:/data/tvshows
+      - ~/media/movies:/data/movies
+      - ${DOCKER_BASE_FOLDER}/shared:/shared
+    ports:
+      - 8096:8096
+    restart: always
+
+  # OMBI
+  ombi:
+    image: lscr.io/linuxserver/ombi:latest
+    container_name: ombi
+    networks:
+      - arr-net
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${MY_TMZ}
+    volumes:
+      - ${DOCKER_BASE_FOLDER}/ombi/config:/config
+    ports:
+      - 3579:3579
+    restart: always
+
+  # SEERR, OMBI REPLACEMENT?
+  seerr:
+    image: ghcr.io/fallenbagel/jellyseerr:latest
+    container_name: seerr
+    networks:
+      - arr-net
+    restart: unless-stopped
+    environment:
+      - LOG_LEVEL=info        # or debug, if you want more logs
+      - TZ=${MY_TMZ}   # set this to your timezone
+      - PORT=5055             # optional; default is 5055
+    ports:
+      - "5055:5055"
+    volumes:
+      - ${DOCKER_BASE_FOLDER}/seerr/config:/app/config
+
