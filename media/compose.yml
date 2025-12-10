@@ -184,6 +184,6 @@ services:
       - "com.containrrr.watchtower=true"
 
 # Define the network here
-  networks:
-    arr-net:
-      driver: bridge
+networks:
+  arr-net:
+    driver: bridge
