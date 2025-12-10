@@ -19,6 +19,8 @@ services:
       - /etc/localtime:/etc/localtime:ro
     environment:
       - TZ=${MY_TMZ}
+    labels:
+      - "com.containrrr.watchtower=true"
 
   # ADD BLOCKING AND DHCP 
   pihole:

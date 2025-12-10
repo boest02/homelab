@@ -17,7 +17,7 @@ services:
       - prowlarr
     volumes:
       - ${DOCKER_BASE_FOLDER}/radarr:/config
-      - ~/media/movies:/movies # PATH TO MOVIE MEDIA FILES
+      - ${MEDIA_DISK_LOCATION}/movies:/movies # PATH TO MOVIE MEDIA FILES
       - ~/Downloads:/downloads
       - ${DOCKER_BASE_FOLDER}/shared:/shared
       - /etc/localtime:/etc/localtime:ro
@@ -28,6 +28,8 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=${MY_TMZ} 
+    labels:
+      - "com.containrrr.watchtower=true"
 
   # SONARR - TV SHOW DOWNLOAD AND MANAGEMENT
   sonarr:
@@ -40,7 +42,7 @@ services:
       - prowlarr    
     volumes:
       - ${DOCKER_BASE_FOLDER}/sonarr:/config
-      - ~/media/shows:/shows # PATH TO SHOWS MEDIA FILES
+      - ${MEDIA_DISK_LOCATION}/shows:/shows # PATH TO SHOWS MEDIA FILES
       - ~/Downloads:/downloads
       - ${DOCKER_BASE_FOLDER}/shared:/shared
       - /etc/localtime:/etc/localtime:ro
@@ -51,10 +53,13 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=${MY_TMZ}
+    labels:
+      - "com.containrrr.watchtower=true"
 
   # LIDARR - MUSIC DOWNLOADS
   lidarr:
     image: lscr.io/linuxserver/lidarr:latest
+    hostname: lidarr
     container_name: lidarr
     networks:
       - arr-net
@@ -66,17 +71,20 @@ services:
       - TZ=Etc/UTC
     volumes:
       - ${DOCKER_BASE_FOLDER}/lidarr/config:/config
-      - ~/media/music:/music #optional
+      - ${MEDIA_DISK_LOCATION}/music:/music #optional
       - ~/Downloads:/downloads #optional
       - ${DOCKER_BASE_FOLDER}/shared:/shared
       - /etc/localtime:/etc/localtime:ro
     ports:
       - 8686:8686
     restart: unless-stopped
+    labels:
+      - "com.containrrr.watchtower=true"
 
   # PROWLARR - manage the Indexers for all the ARR's
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
+    hostname: prowlarr
     container_name: prowlarr
     networks:
       - arr-net
@@ -91,6 +99,8 @@ services:
     ports:
       - 9696:9696
     restart: unless-stopped
+    labels:
+      - "com.containrrr.watchtower=true"
 
   # SABNZB - USENET (NZB) DOWNLOADER
   sabnzbd:
@@ -115,10 +125,13 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=${MY_TMZ}
+    labels:
+      - "com.containrrr.watchtower=true"
 
   # EMBY
   emby:
     image: linuxserver/emby
+    hostname: emby
     container_name: emby
     networks:
       - arr-net
@@ -129,16 +142,19 @@ services:
     volumes:
       - ${DOCKER_BASE_FOLDER}/emby:/config
       - /media/steve/SteveBStor1/entertainment/home_movies:/data/home
-      - ~/media/shows:/data/tvshows
-      - ~/media/movies:/data/movies
+      - ${MEDIA_DISK_LOCATION}/shows:/data/tvshows
+      - ${MEDIA_DISK_LOCATION}/movies:/data/movies
       - ${DOCKER_BASE_FOLDER}/shared:/shared
     ports:
       - 8096:8096
     restart: always
+    labels:
+      - "com.containrrr.watchtower=true"
 
   # OMBI
   ombi:
     image: lscr.io/linuxserver/ombi:latest
+    hostname: ombi
     container_name: ombi
     networks:
       - arr-net
@@ -151,10 +167,13 @@ services:
     ports:
       - 3579:3579
     restart: always
+    labels:
+      - "com.containrrr.watchtower=true"
 
   # SEERR, OMBI REPLACEMENT?
   seerr:
     image: ghcr.io/fallenbagel/jellyseerr:latest
+    hostname: seerr
     container_name: seerr
     networks:
       - arr-net
@@ -162,9 +181,9 @@ services:
     environment:
       - LOG_LEVEL=info        # or debug, if you want more logs
       - TZ=${MY_TMZ}   # set this to your timezone
-      - PORT=5055             # optional; default is 5055
     ports:
       - "5055:5055"
     volumes:
       - ${DOCKER_BASE_FOLDER}/seerr/config:/app/config
-
+    labels:
+      - "com.containrrr.watchtower=true"
