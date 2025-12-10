@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "Start Containers..."
 
-docker compose -f ./core/compose.yml
+docker compose up -f ./core/compose.yml -d
 
-docker compose -f ./media/compose.yml
+docker compose up -f ./media/compose.yml -d
