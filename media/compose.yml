@@ -1,11 +1,6 @@
 
 services:
 
-  # Define the network here
-  networks:
-    arr-net:
-      driver: bridge
-
   # RADARR - MOVIE DOWNLOAD AND MANAGEMENT
   radarr:
     image: linuxserver/radarr
@@ -187,3 +182,8 @@ services:
       - ${DOCKER_BASE_FOLDER}/seerr/config:/app/config
     labels:
       - "com.containrrr.watchtower=true"
+
+# Define the network here
+  networks:
+    arr-net:
+      driver: bridge
