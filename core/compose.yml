@@ -1,4 +1,3 @@
-
 services:
   # PORTAINER - MANAGE CONTAINERS
   portainer:
@@ -44,8 +43,7 @@ services:
     restart: unless-stopped
     # have watchtower control
     labels:
-      - "com.containrrr.watchtower=true
- 
+      - "com.containrrr.watchtower=true"
   nginx:
     container_name: nginx
     image: nginx:alpine
@@ -75,16 +73,14 @@ services:
     environment:
       # Optional: Set a human-readable timezone
       TZ: ${MY_TMZ}
-      
+
       # Recommended: Only update containers that explicitly have the 
       # label "com.containrrr.watchtower" set to "true".
       # Comment this out if you want it to update *every* container.
       WATCHTOWER_SCOPE: com.containrrr.watchtower
-      
       # Optional: Set the check interval (default is 24 hours, but can set a specific interval in seconds)
       # WATCHTOWER_POLL_INTERVAL: 86400 
-    
-    # Apply the label here so Watchtower monitors itself (optional, but good practice)
+
+      # Apply the label here so Watchtower monitors itself (optional, but good practice)
     labels:
       - "com.containrrr.watchtower=true"
-
