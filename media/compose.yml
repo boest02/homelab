@@ -131,6 +131,7 @@ services:
       - /media/steve/SteveBStor1/entertainment/home_movies:/data/home
       - ${MEDIA_DISK_LOCATION}/shows:/data/tvshows
       - ${MEDIA_DISK_LOCATION}/movies:/data/movies
+      - ${MEDIA_DISK_LOCATION}/music:/data/music
       - ${DOCKER_BASE_FOLDER}/shared:/shared
     ports:
       - 8096:8096
