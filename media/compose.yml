@@ -1,45 +1,50 @@
+version: "3.8"
 
 services:
 
   # RADARR - MOVIE DOWNLOAD AND MANAGEMENT
   radarr:
-    image: linuxserver/radarr
-    hostname: radarr
+    image: linuxserver/radarr:latest
     container_name: radarr
+    hostname: radarr
     networks:
       - arr-net
+    mem_limit: 512m
+    memswap_limit: 512m
     volumes:
       - ${DOCKER_BASE_FOLDER}/radarr:/config
-      - ${MEDIA_DISK_LOCATION}/movies:/movies # PATH TO MOVIE MEDIA FILES
-      - ~/Downloads:/downloads
+      - ${MEDIA_DISK_LOCATION}/movies:/movies
+      - ${MEDIA_DISK_LOCATION}/downloads:/downloads
       - ${DOCKER_BASE_FOLDER}/shared:/shared
       - /etc/localtime:/etc/localtime:ro
     ports:
       - 7878:7878
-    restart: always
+    restart: unless-stopped
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=${MY_TMZ} 
+      - TZ=${MY_TMZ}
     labels:
       - "com.containrrr.watchtower=true"
 
   # SONARR - TV SHOW DOWNLOAD AND MANAGEMENT
   sonarr:
-    image: linuxserver/sonarr
-    hostname: sonarr
+    image: linuxserver/sonarr:latest
     container_name: sonarr
+    hostname: sonarr
     networks:
       - arr-net
+    mem_limit: 512m
+    memswap_limit: 512m
     volumes:
       - ${DOCKER_BASE_FOLDER}/sonarr:/config
-      - ${MEDIA_DISK_LOCATION}/shows:/shows # PATH TO SHOWS MEDIA FILES
-      - ~/Downloads:/downloads
+      - ${MEDIA_DISK_LOCATION}/shows:/shows
+      - ${MEDIA_DISK_LOCATION}/downloads:/downloads
       - ${DOCKER_BASE_FOLDER}/shared:/shared
       - /etc/localtime:/etc/localtime:ro
     ports:
       - 8989:8989
-    restart: always
+    restart: unless-stopped
     environment:
       - PUID=1000
       - PGID=1000
@@ -50,64 +55,67 @@ services:
   # LIDARR - MUSIC DOWNLOADS
   lidarr:
     image: lscr.io/linuxserver/lidarr:latest
-    hostname: lidarr
     container_name: lidarr
+    hostname: lidarr
     networks:
       - arr-net
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Etc/UTC
+    mem_limit: 512m
+    memswap_limit: 512m
     volumes:
       - ${DOCKER_BASE_FOLDER}/lidarr/config:/config
-      - ${MEDIA_DISK_LOCATION}/music:/music #optional
-      - ~/Downloads:/downloads #optional
+      - ${MEDIA_DISK_LOCATION}/music:/music
+      - ${MEDIA_DISK_LOCATION}/downloads:/downloads
       - ${DOCKER_BASE_FOLDER}/shared:/shared
       - /etc/localtime:/etc/localtime:ro
     ports:
       - 8686:8686
     restart: unless-stopped
-    labels:
-      - "com.containrrr.watchtower=true"
-
-  # PROWLARR - manage the Indexers for all the ARR's
-  prowlarr:
-    image: lscr.io/linuxserver/prowlarr:latest
-    hostname: prowlarr
-    container_name: prowlarr
-    networks:
-      - arr-net
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=Etc/UTC
+      - TZ=${MY_TMZ}
+    labels:
+      - "com.containrrr.watchtower=true"
+
+  # PROWLARR - INDEXER MANAGEMENT
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    hostname: prowlarr
+    networks:
+      - arr-net
+    mem_limit: 256m
+    memswap_limit: 256m
     volumes:
-      - ~/prowlarr/data:/config
+      - ${DOCKER_BASE_FOLDER}/prowlarr:/config
+      - /etc/localtime:/etc/localtime:ro
     ports:
       - 9696:9696
     restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${MY_TMZ}
     labels:
       - "com.containrrr.watchtower=true"
 
-  # SABNZB - USENET (NZB) DOWNLOADER
+  # SABNZBD - USENET DOWNLOADER
   sabnzbd:
-    image: linuxserver/sabnzbd
-    hostname: sabnzbd
+    image: linuxserver/sabnzbd:latest
     container_name: sabnzbd
+    hostname: sabnzbd
     networks:
       - arr-net
+    mem_limit: 1g
+    memswap_limit: 1g
     volumes:
       - ${DOCKER_BASE_FOLDER}/sabnzbd:/config
-      - ~/Downloads/complete:/downloads/complete
-      - ~/Downloads/incomplete:/downloads/incomplete
+      - ${MEDIA_DISK_LOCATION}/downloads:/downloads
       - ${DOCKER_BASE_FOLDER}/shared:/shared
+      - /etc/localtime:/etc/localtime:ro
     ports:
-        - 8080:8080
-    restart: always
-    depends_on:
-      - radarr
-      - sonarr
-      - lidarr
+      - 8080:8080
+    restart: unless-stopped
     environment:
       - PUID=1000
       - PGID=1000
@@ -115,17 +123,15 @@ services:
     labels:
       - "com.containrrr.watchtower=true"
 
-  # EMBY
+  # EMBY - MEDIA SERVER
   emby:
-    image: linuxserver/emby
-    hostname: emby
+    image: linuxserver/emby:latest
     container_name: emby
+    hostname: emby
     networks:
       - arr-net
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=${MY_TMZ}
+    mem_limit: 2g
+    memswap_limit: 2g
     volumes:
       - ${DOCKER_BASE_FOLDER}/emby:/config
       - /media/steve/SteveBStor1/entertainment/home_movies:/data/home
@@ -133,50 +139,60 @@ services:
       - ${MEDIA_DISK_LOCATION}/movies:/data/movies
       - ${MEDIA_DISK_LOCATION}/music:/data/music
       - ${DOCKER_BASE_FOLDER}/shared:/shared
+      - /etc/localtime:/etc/localtime:ro
     ports:
       - 8096:8096
-    restart: always
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${MY_TMZ}
     labels:
       - "com.containrrr.watchtower=true"
 
   # OMBI
   ombi:
     image: lscr.io/linuxserver/ombi:latest
-    hostname: ombi
     container_name: ombi
+    hostname: ombi
     networks:
       - arr-net
+    mem_limit: 256m
+    memswap_limit: 256m
+    volumes:
+      - ${DOCKER_BASE_FOLDER}/ombi/config:/config
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 3579:3579
+    restart: unless-stopped
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=${MY_TMZ}
-    volumes:
-      - ${DOCKER_BASE_FOLDER}/ombi/config:/config
-    ports:
-      - 3579:3579
-    restart: always
     labels:
       - "com.containrrr.watchtower=true"
 
-  # SEERR, OMBI REPLACEMENT?
+  # JELLYSEERR
   seerr:
     image: ghcr.io/fallenbagel/jellyseerr:latest
-    hostname: seerr
     container_name: seerr
+    hostname: seerr
     networks:
       - arr-net
-    restart: unless-stopped
-    environment:
-      - LOG_LEVEL=info        # or debug, if you want more logs
-      - TZ=${MY_TMZ}   # set this to your timezone
-    ports:
-      - "5055:5055"
+    mem_limit: 512m
+    memswap_limit: 512m
     volumes:
       - ${DOCKER_BASE_FOLDER}/seerr/config:/app/config
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 5055:5055
+    restart: unless-stopped
+    environment:
+      - LOG_LEVEL=info
+      - TZ=${MY_TMZ}
     labels:
       - "com.containrrr.watchtower=true"
 
-# Define the network here
 networks:
   arr-net:
     driver: bridge
