@@ -9,8 +9,8 @@ services:
     depends_on:
       - pihole
     ports:
-      - 9000:9000
-      - 8000:8000
+      - 127.0.0.1:9000:9000  # Bind to localhost only
+      - 127.0.0.1:8000:8000  # Optional agent port, localhost only
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${DOCKER_BASE_FOLDER}/portainer:/data
@@ -21,7 +21,22 @@ services:
     labels:
       - "com.containrrr.watchtower=true"
 
-  # ADD BLOCKING AND DHCP 
+  # NGINX PROXY MANAGER
+  nginxpm:
+    image: 'jc21/nginx-proxy-manager:latest'
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+      - '81:81'
+    environment:
+      TZ: ${MY_TMZ}
+      DISABLE_IPV6: 'true'
+    volumes:
+      - ${DOCKER_BASE_FOLDER}/nginxpm/data:/data
+      - ${DOCKER_BASE_FOLDER}/nginxpm/letsencrypt:/etc/letsencrypt
+
+  # PIHOLE
   pihole:
     container_name: pihole
     image: pihole/pihole:latest
@@ -35,74 +50,8 @@ services:
       - '${DOCKER_BASE_FOLDER}/pihole/etc-pihole:/etc/pihole'
       - '${DOCKER_BASE_FOLDER}/pihole/etc-dnsmasq:/etc/dnsmasq.d'
     cap_add:
-      # See https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
-      # Required if you are using Pi-hole as your DHCP server, else not needed
       - NET_ADMIN
-      # Required if you are using Pi-hole as your NTP client to be able to set the host's system time
       - SYS_TIME
     restart: unless-stopped
-    # have watchtower control
-    labels:
-      - "com.containrrr.watchtower=true"
-#  nginx:
-#    container_name: nginx
-#    image: nginx:alpine
-#    depends_on:
-#      - pihole
-#    volumes:
-#      - ${DOCKER_BASE_FOLDER}/templates:/etc/nginx/templates
-#      - ${DOCKER_BASE_FOLDER}/nginx/config:/etc/nginx/conf.d
-#      - ${DOCKER_BASE_FOLDER}/nginx/html:/etc/nginx/html
-#    ports:
-#      - "80:80"
-#      - "443:443"
-#    extra_hosts:
-#      - "host.docker.internal:host-gateway"
-#    restart: always
-
-  nginxpm:
-    image: 'jc21/nginx-proxy-manager:latest'
-    restart: unless-stopped
-
-    ports:
-      # These ports are in format <host-port>:<container-port>
-      - '80:80' # Public HTTP Port
-      - '443:443' # Public HTTPS Port
-      - '81:81' # Admin Web Port
-      # Add any other Stream port you want to expose
-      # - '21:21' # FTP
-
-    environment:
-      TZ: ${MY_TMZ}
-
-      # Uncomment this if IPv6 is not enabled on your host
-      DISABLE_IPV6: 'true'
-
-    volumes:
-      - ${DOCKER_BASE_FOLDER}/nginxpm/data:/data
-      - ${DOCKER_BASE_FOLDER}/nginxpm/letsencrypt:/etc/letsencrypt
-  
-  # keep docker images updated
-  watchtower:
-    image: containrrr/watchtower:latest
-    container_name: watchtower
-    restart: unless-stopped
-    depends_on:
-      - pihole
-    # Mount the Docker socket so Watchtower can interact with the Docker daemon
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      # Optional: Set a human-readable timezone
-      TZ: ${MY_TMZ}
-
-      # Recommended: Only update containers that explicitly have the 
-      # label "com.containrrr.watchtower" set to "true".
-      # Comment this out if you want it to update *every* container.
-      WATCHTOWER_SCOPE: com.containrrr.watchtower
-      # Optional: Set the check interval (default is 24 hours, but can set a specific interval in seconds)
-      # WATCHTOWER_POLL_INTERVAL: 86400 
-
-      # Apply the label here so Watchtower monitors itself (optional, but good practice)
     labels:
       - "com.containrrr.watchtower=true"

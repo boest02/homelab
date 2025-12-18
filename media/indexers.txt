@@ -1,0 +1,21 @@
+This file will store the indexer data incase lost...
+{
+    "indexer": "altHub",
+    "api_key": "93204a82d44b432d702aaeb7c097b5c9"
+},
+{
+    "indexer": "miatrix",
+    "api_key": "8bf2e9198ae8e54fa02c8953c626c5cc"
+},
+{
+    "indexer": "NZBFinder",
+    "api_key": "7535af154447b2b50291c0d186d82214"
+},
+{
+    "indexer": "NZBgeek",
+    "api_key": "taZT95Dq4c7dsXjeDDSjcz8gmBuVLX1q"
+},
+{
+    "indexer": "NzbNoob",
+    "api_key": "7fb8faecee00c823b96ac9e0963a4f7b"
+},
