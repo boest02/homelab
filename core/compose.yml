@@ -35,6 +35,40 @@ services:
     volumes:
       - ${DOCKER_BASE_FOLDER}/nginxpm/data:/data
       - ${DOCKER_BASE_FOLDER}/nginxpm/letsencrypt:/etc/letsencrypt
+    networks:
+      - nginx-net
+
+  # keep docker images updated
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    restart: unless-stopped
+    depends_on:
+      - pihole
+    # Mount the Docker socket so Watchtower can interact with the Docker daemon
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      # Optional: Set a human-readable timezone
+      TZ: ${MY_TMZ}
+
+      # Recommended: Only update containers that explicitly have the 
+      # label "com.containrrr.watchtower" set to "true".
+      # Comment this out if you want it to update *every* container.
+      WATCHTOWER_SCOPE: com.containrrr.watchtower
+      # Optional: Set the check interval (default is 24 hours, but can set a specific interval in seconds)
+      # WATCHTOWER_POLL_INTERVAL: 86400 
+
+  # Cloudflare Tunnel
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TOKEN}
+    networks:
+      - nginx-net
 
   # PIHOLE
   pihole:
@@ -55,3 +89,8 @@ services:
     restart: unless-stopped
     labels:
       - "com.containrrr.watchtower=true"
+
+networks:
+  nginx-net:
+    driver: bridge
+
