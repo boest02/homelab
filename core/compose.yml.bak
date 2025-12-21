@@ -19,13 +19,11 @@ services:
     environment:
       - TZ=${MY_TMZ}
     labels:
-      - "com.centurylinklabs.watchtower.enable=true"
+      - "com.containrrr.watchtower=true"
 
   # NGINX PROXY MANAGER
   nginxpm:
     image: 'jc21/nginx-proxy-manager:latest'
-    hostname: nginxpm
-    container_name: nginxpm
     restart: unless-stopped
     ports:
       - '80:80'
@@ -91,7 +89,7 @@ services:
       - SYS_TIME
     restart: unless-stopped
     labels:
-      - "com.centurylinklabs.watchtower.enable=true"
+      - "com.containrrr.watchtower=true"
 
 networks:
   nginx-net:
