@@ -9,8 +9,8 @@ services:
     depends_on:
       - pihole
     ports:
-      - 9000:9000  
-      - 8000:8000  
+      - 9000:9000
+      - 8000:8000
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${DOCKER_BASE_FOLDER}/portainer:/data
@@ -23,17 +23,17 @@ services:
 
   # NGINX PROXY MANAGER
   nginxpm:
-    image: 'jc21/nginx-proxy-manager:latest'
+    image: "jc21/nginx-proxy-manager:latest"
     hostname: nginxpm
     container_name: nginxpm
     restart: unless-stopped
     ports:
-      - '80:80'
-      - '443:443'
-      - '81:81'
+      - "80:80"
+      - "443:443"
+      - "81:81"
     environment:
       TZ: ${MY_TMZ}
-      DISABLE_IPV6: 'true'
+      DISABLE_IPV6: "true"
     volumes:
       - ${DOCKER_BASE_FOLDER}/nginxpm/data:/data
       - ${DOCKER_BASE_FOLDER}/nginxpm/letsencrypt:/etc/letsencrypt
@@ -54,13 +54,13 @@ services:
       # Optional: Set a human-readable timezone
       TZ: ${MY_TMZ}
 
-      # Recommended: Only update containers that explicitly have the 
+      # Recommended: Only update containers that explicitly have the
       # label "com.containrrr.watchtower" set to "true".
       # Comment this out if you want it to update *every* container.
       WATCHTOWER_LABEL_ENABLE: true
 
       # Optional: Set the check interval (default is 24 hours, but can set a specific interval in seconds)
-      # WATCHTOWER_POLL_INTERVAL: 86400 
+      # WATCHTOWER_POLL_INTERVAL: 86400
 
   # Cloudflare Tunnel
   cloudflared:
@@ -80,12 +80,12 @@ services:
     network_mode: "host"
     environment:
       TZ: ${MY_TMZ}
-      FTLCONF_webserver_port: '${PIHOLE_WEB_PORT}'
-      FTLCONF_webserver_api_password: '${PIHOLE_PASSWORD}'
-      FTLCONF_dns_listeningMode: 'all'
+      FTLCONF_webserver_port: "${PIHOLE_WEB_PORT}"
+      FTLCONF_webserver_api_password: "${PIHOLE_PASSWORD}"
+      FTLCONF_dns_listeningMode: "all"
     volumes:
-      - '${DOCKER_BASE_FOLDER}/pihole/etc-pihole:/etc/pihole'
-      - '${DOCKER_BASE_FOLDER}/pihole/etc-dnsmasq:/etc/dnsmasq.d'
+      - "${DOCKER_BASE_FOLDER}/pihole/etc-pihole:/etc/pihole"
+      - "${DOCKER_BASE_FOLDER}/pihole/etc-dnsmasq:/etc/dnsmasq.d"
     cap_add:
       - NET_ADMIN
       - SYS_TIME
@@ -93,7 +93,21 @@ services:
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
 
+  # Setup a home page
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    environment:
+      HOMEPAGE_ALLOWED_HOSTS: 192.168.1.171:3500
+      PUID: 1000 # optional, your user id
+      PGID: 1000 # optional, your group id
+    ports:
+      - 3500:3000
+    volumes:
+      - ${DOCKER_BASE_FOLDER}/homepage/config:/app/config # Make sure your local config directory exists
+      - /var/run/docker.sock:/var/run/docker.sock:ro # optional, for docker integrations
+    restart: unless-stopped
+
 networks:
   nginx-net:
     driver: bridge
-

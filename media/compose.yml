@@ -1,7 +1,6 @@
 version: "3.8"
 
 services:
-
   # RADARR - MOVIE DOWNLOAD AND MANAGEMENT
   radarr:
     image: linuxserver/radarr:latest
