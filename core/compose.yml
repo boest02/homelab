@@ -50,6 +50,9 @@ services:
     # Mount the Docker socket so Watchtower can interact with the Docker daemon
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "10000:8080"  
+    command: --http-api-update --http-api-periodic-polls # Optional: run periodic polls alongside the API  
     environment:
       # Optional: Set a human-readable timezone
       TZ: ${MY_TMZ}
@@ -58,6 +61,9 @@ services:
       # label "com.containrrr.watchtower" set to "true".
       # Comment this out if you want it to update *every* container.
       WATCHTOWER_LABEL_ENABLE: true
+
+      WATCHTOWER_HTTP_API_TOKEN: watchtowersecrettoken
+      WATCHTOWER_HTTP_API_METRICS: true
 
       # Optional: Set the check interval (default is 24 hours, but can set a specific interval in seconds)
       # WATCHTOWER_POLL_INTERVAL: 86400
@@ -100,12 +106,18 @@ services:
     environment:
       HOMEPAGE_ALLOWED_HOSTS: 192.168.1.171:3500
       PUID: 1000 # optional, your user id
-      PGID: 1000 # optional, your group id
+      PGID: 998 # optional, your group id
+      TZ: ${MY_TMZ}
     ports:
       - 3500:3000
+    depends_on:
+      - pihole
     volumes:
       - ${DOCKER_BASE_FOLDER}/homepage/config:/app/config # Make sure your local config directory exists
       - /var/run/docker.sock:/var/run/docker.sock:ro # optional, for docker integrations
+      - ~/media:/mnt/media:ro
+    env_file:
+      - ./.env  
     restart: unless-stopped
 
 networks:
