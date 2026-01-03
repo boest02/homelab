@@ -146,7 +146,7 @@ services:
       - prowlarr 
     volumes:
       - ${DOCKER_BASE_FOLDER}/emby:/config
-      - /media/steve/SteveBStor3/entertainment/home_movies:/data/home
+      - /mnt/media/home/entertainment/home_movies:/data/home
       - ${MEDIA_DISK_LOCATION}/shows:/data/tvshows
       - ${MEDIA_DISK_LOCATION}/movies:/data/movies
       - ${MEDIA_DISK_LOCATION}/music:/data/music
